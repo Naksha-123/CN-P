@@ -1,0 +1,68 @@
+import java.io.*;
+import java.net.*;
+
+public class SimpleServer {
+    public static void main(String[] args) {
+        int port = 5000;
+
+        try (ServerSocket serverSocket = new ServerSocket(port)) {
+            System.out.println("Server is running on port " + port);
+
+            Socket socket = serverSocket.accept(); // Wait for a client
+            System.out.println("Client connected");
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+
+            String fileName = in.readLine(); // Read file name
+            File file = new File(fileName);
+
+            if (file.exists()) {
+                out.println("File found");
+                BufferedReader fileReader = new BufferedReader(new FileReader(file));
+                String line;
+                while ((line = fileReader.readLine()) != null) {
+                    out.println(line);
+                }
+                fileReader.close();
+            } else {
+                out.println("File not found");
+            }
+
+            socket.close();
+            System.out.println("Connection closed");
+        } catch (IOException e) {
+            System.out.println("Server error: " + e.getMessage());
+        }
+    }
+}
+
+
+import java.io.*;
+import java.net.*;
+
+public class SimpleClient {
+    public static void main(String[] args) {
+        String serverAddress = "localhost"; // Server address
+        int port = 5000; // Server port
+
+        try (Socket socket = new Socket(serverAddress, port);
+             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+             BufferedReader userInput = new BufferedReader(new InputStreamReader(System.in))) {
+
+            System.out.print("Enter the file name: ");
+            String fileName = userInput.readLine(); // Get file name from user
+
+            out.println(fileName); // Send file name to server
+
+            System.out.println("Response from server:");
+            String response;
+            while ((response = in.readLine()) != null) {
+                System.out.println(response);
+            }
+        } catch (IOException e) {
+            System.out.println("Client error: " + e.getMessage());
+        }
+    }
+}
